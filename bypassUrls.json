@@ -1,0 +1,76 @@
+{
+    "routedBypassRules": [
+        {
+            "description": "WieistmeineIp.de",
+            "ipProtocol": "tcp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "18.184.141.94/32",
+            "fromPort": "80",
+            "toPort": "443"
+        },
+        {
+            "description": "O365 Login URLs 1",
+            "ipProtocol": "tcp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "20.190.128.0/18",
+            "fromPort": "80",
+            "toPort": "80"
+        },
+        {
+            "description": "O365 Login URLs 2",
+            "ipProtocol": "tcp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "20.190.128.0/18",
+            "fromPort": "443",
+            "toPort": "443"
+        },
+        {
+            "description": "O365 Login URLs 3",
+            "ipProtocol": "tcp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "40.126.0.0/18",
+            "fromPort": "80",
+            "toPort": "80"
+        },
+        {
+            "description": "portquiz.net",
+            "ipProtocol": "tcp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "52.47.209.216/32",
+            "fromPort": "80",
+            "toPort": "80"
+        },
+        {
+            "description": "O365 Login URLs 4",
+            "ipProtocol": "tcp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "40.126.0.0/18",
+            "fromPort": "443",
+            "toPort": "443"
+        },
+        {
+            "description": "Skype and Teams UDP 1",
+            "ipProtocol": "udp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "13.107.64.0/18",
+            "fromPort": "3478",
+            "toPort": "3481"
+        },
+        {
+            "description": "Skype and Teams UDP 2",
+            "ipProtocol": "udp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "52.112.0.0/14",
+            "fromPort": "3478",
+            "toPort": "3481"
+        },
+        {
+            "description": "Skype and Teams UDP 3",
+            "ipProtocol": "udp",
+            "sourceCirdIp": "0.0.0.0/0",
+            "destinationCirdIp": "52.120.0.0/14",
+            "fromPort": "3478",
+            "toPort": "3481"
+        }
+    ]
+}
