@@ -1,12 +1,12 @@
 {
     "routedBypassRules": [
         {
-            "description": "WieistmeineIp.de",
+            "description": "portquiz.net",
             "ipProtocol": "tcp",
             "sourceCirdIp": "0.0.0.0/0",
-            "destinationCirdIp": "18.184.141.94/32",
+            "destinationCirdIp": "35.180.139.74/32",
             "fromPort": "80",
-            "toPort": "443"
+            "toPort": "80"
         },
         {
             "description": "O365 Login URLs 1",
