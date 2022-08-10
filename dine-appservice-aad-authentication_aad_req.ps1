@@ -4,7 +4,7 @@
 
 param([string] $webappName)
 
-
+Install-Module -Name "Microsoft.Graph.Applications" -Force
 
 $ErrorActionPreference = "Stop"
 
@@ -25,7 +25,9 @@ $description = "This AAD Application belongs to Azure App Service $webappName in
 $subscription = (Get-AzContext).Subscription
 
 
-
+if (!$webappName) {
+  Throw "Webapp name not passed."
+}
 
 
 
