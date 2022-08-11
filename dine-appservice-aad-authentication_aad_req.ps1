@@ -26,6 +26,11 @@ $ErrorActionPreference = "Stop"
 # ---------------------------------------------------------------------------------------------------------- #
 
 # ---------------------------------------------------------------------------------------------------------- #
+# Necessary PowerShell Modules
+
+Install-Module -Name "Microsoft.Graph.Applications" -Force
+
+# ---------------------------------------------------------------------------------------------------------- #
 # Module // Login into Microsoft Graph
 
 $token = Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com"
@@ -34,8 +39,6 @@ Connect-MgGraph -AccessToken $token.Token
 # ---------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------- Global Parameters ------------------------------------------- #
 # ---------------------------------------------------------------------------------------------------------- #
-
-Install-Module -Name "Microsoft.Graph.Applications" -Force
 
 # Microsoft Graph App ID (DON'T CHANGE)
 $GraphAppId = "00000003-0000-0000-c000-000000000000"
