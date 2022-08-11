@@ -6,8 +6,7 @@
  .DESCRIPTION
     Docs
       - https://codez.deedx.cz/posts/update-redirect-uris-from-azure-devops/
-      - https://docs.microsoft.com/en-us/azure/active-directory/roles/custom-consent-permissions (because Admin Consent is needed to approve tenant-wide application permissions)
-      - https://docs.microsoft.com/en-us/azure/active-directory/roles/custom-create (because you should create a custom AAD role instead of using Global Administrator)
+      - https://blog.nico-schiering.de/granting-azure-ad-admin-consent-programmatically/ (grant admin consent via code)
 
  .NOTES
     Author:         Daniel Heidemann
@@ -123,31 +122,25 @@ else {
 
   $appServicePrincipal = New-MgServicePrincipal -AppId $appRegistration.AppId -AdditionalProperties @{}
 
-
-
   # ----------------------------------------------------
-  # Auto-Admin consent for App Registration for needed Permission
-  
-  $applicationReadWriteAll = @{
-    Id   = $AppRole.Id # "User.Read.All"
-    Type = "Role"
-  }
-
   # MS Graph App ID
   
   $graphServicePrincipal = Get-MgServicePrincipal -Filter "appId eq '$GraphAppId'"
 
-  # Grant admin consent to app registration for permission "User.Read.All"
+  # Grant admin consent to app registration for permission "User.Read"
 
-  New-MgServicePrincipalAppRoleAssignment `
-    -ServicePrincipalId $appServicePrincipal.Id `
-    -ResourceId $graphServicePrincipal.Id `
-    -AppRoleId $applicationReadWriteAll.Id `
-    -PrincipalId $appServicePrincipal.Id
+  New-MgOauth2PermissionGrant -ResourceId $graphServicePrincipal.Id -Scope @($PermissionName) -ClientId $appServicePrincipal.Id -ConsentType "AllPrincipals"
+
 }
 
-
-
+# ----------------------------------------------------
+# Output to deployment
 $DeploymentScriptOutputs = @{}
 $DeploymentScriptOutputs['appId'] = $appRegistration.AppId
 
+
+
+
+
+
+# az ad app permission grant --id "133cf7ab-9151-4cab-85da-9a63ef309195" --api "00000003-0000-0000-c000-000000000000" --scope "User.Read"
