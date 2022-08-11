@@ -39,6 +39,8 @@ $ErrorActionPreference = "Stop"
 # Necessary PowerShell Modules
 
 Install-Module -Name "Microsoft.Graph.Applications" -Force
+Install-Module -Name "Microsoft.Graph.Identity.SignIns" -Force
+
 # Install-Module -Name "Az.Accounts" -Force
 # Install-Module -Name "Az.Resources" -Force
 
