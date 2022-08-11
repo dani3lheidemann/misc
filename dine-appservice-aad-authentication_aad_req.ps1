@@ -16,7 +16,18 @@
     SDK (tested):   PowerShell Core 7.2 // PowerShell Azure Module 8.0.0
 #>
 
-param([string] $webappName)
+
+### ------------------------------------------------------------------------------------------------
+### ------------------------------------------------------------------------------------------------
+### PARAMS
+
+Param (        
+  [Parameter(Mandatory = $true)][string]$webappName,
+  [Parameter(Mandatory = $true)][string]$subscriptionId,
+  [Parameter(Mandatory = $true)][string]$subscriptionName
+)
+
+
 
 $ErrorActionPreference = "Stop"
 
@@ -28,9 +39,10 @@ $ErrorActionPreference = "Stop"
 # Necessary PowerShell Modules
 
 Install-Module -Name "Microsoft.Graph.Applications" -Force
+Install-Module -Name "Az.Resources" -Force
 
 # ---------------------------------------------------------------------------------------------------------- #
-# Module // Login into Microsoft Graph
+# Login into Microsoft Graph
 
 $token = Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com"
 Connect-MgGraph -AccessToken $token.Token
@@ -43,12 +55,15 @@ Connect-MgGraph -AccessToken $token.Token
 $GraphAppId = "00000003-0000-0000-c000-000000000000"
 
 # Check the Microsoft Graph documentation for the permission you need for the operation
-$PermissionName = "User.Read.All"
+$PermissionName = "User.Read"
+
+# Get application owner for Azure AD App notes
+$appOwner = (Get-AzTag -ResourceId "/subscriptions/$subscriptionId").Properties.TagsProperty['owner']
 
 # Azure AD App Registration infos
 $appReqName = "app-$webappName"
-$notes = "This AAD Application belongs to Azure App Service $webappName in Subscription: Id:$($subscription.Id), Name:$($subscription.Name)."
-$subscription = (Get-AzContext).Subscription
+$notes = "This AAD Application belongs to Azure App Service $webappName. Owner details: SubscriptionId:$($subscriptionId); SubscriptionName:$($subscriptionName); SubscriptionOwner:$($appOwner)"
+
 
 
 
@@ -69,8 +84,7 @@ if ($app_reg) {
   Write-Host "Found AAD app registration $($app_reg.DisplayName). Skipping..." -ForegroundColor Yellow
   Write-Host "Found AAD service principal $($app_sp.AppDisplayName). Skipping..." -ForegroundColor Yellow
 
-}
-else {
+}else {
 
 
   # ----------------------------------------------------
@@ -78,29 +92,29 @@ else {
 
   $MsGraphServicePrincipal = Get-MgServicePrincipal -Filter "appId eq '$GraphAppId'"
 
-  # Get Microsoft Graph Service Principal "User.Read.All" App Role
+  # Get Microsoft Graph Service Principal "User.Read" App Role
 
-  $AppRole = $MsGraphServicePrincipal.AppRoles | Where-Object { $_.Value -eq $PermissionName -and $_.AllowedMemberTypes -contains "Application" }
+  $AppRole = $MsGraphServicePrincipal.oauth2PermissionScopes | Where-Object { $_.Value -like $PermissionName }
 
   # ----------------------------------------------------
   # Create app registration
 
   $params = @{
-    displayName            = $appReqName
-    notes                  = $notes
-    signInAudience         = "AzureADMyOrg"
-    requiredResourceAccess = @(
-      @{
-        resourceAppId  = $GraphAppId
-        resourceAccess = @(
-          @{
-            id   = $AppRole.Id
-            type = "Role"
-          }
-        )
-      }
-    )
-    web                    = @{
+    displayName    = $appReqName
+    notes          = $notes
+    signInAudience = "AzureADMyOrg"
+    # requiredResourceAccess = @(
+    #   @{
+    #     resourceAppId  = $GraphAppId
+    #     resourceAccess = @(
+    #       @{
+    #         id   = $AppRole.Id
+    #         type = "Role"
+    #       }
+    #     )
+    #   }
+    # )
+    web            = @{
       redirectUris          = @(
         ("https://$webappName.azurewebsites.net/.auth/login/aad/callback")
       )
@@ -129,7 +143,7 @@ else {
 
   # Grant admin consent to app registration for permission "User.Read"
 
-  New-MgOauth2PermissionGrant -ResourceId $graphServicePrincipal.Id -Scope @($PermissionName) -ClientId $appServicePrincipal.Id -ConsentType "AllPrincipals"
+  New-MgOauth2PermissionGrant -ResourceId $graphServicePrincipal.Id -Scope $PermissionName -ClientId $appServicePrincipal.Id -ConsentType "AllPrincipals"
 
 }
 
@@ -137,10 +151,3 @@ else {
 # Output to deployment
 $DeploymentScriptOutputs = @{}
 $DeploymentScriptOutputs['appId'] = $appRegistration.AppId
-
-
-
-
-
-
-# az ad app permission grant --id "133cf7ab-9151-4cab-85da-9a63ef309195" --api "00000003-0000-0000-c000-000000000000" --scope "User.Read"
