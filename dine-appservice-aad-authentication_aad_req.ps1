@@ -39,8 +39,8 @@ $ErrorActionPreference = "Stop"
 # Necessary PowerShell Modules
 
 Install-Module -Name "Microsoft.Graph.Applications" -Force
-Install-Module -Name "Az.Accounts" -Force
-Install-Module -Name "Az.Resources" -Force
+# Install-Module -Name "Az.Accounts" -Force
+# Install-Module -Name "Az.Resources" -Force
 
 # ---------------------------------------------------------------------------------------------------------- #
 # Login into Microsoft Graph
@@ -59,7 +59,7 @@ $GraphAppId = "00000003-0000-0000-c000-000000000000"
 $PermissionName = "User.Read"
 
 # Get application owner for Azure AD App notes
-$appOwner = (Get-AzTag -ResourceId "/subscriptions/$subscriptionId").Properties.TagsProperty['owner']
+# $appOwner = (Get-AzTag -ResourceId "/subscriptions/$subscriptionId").Properties.TagsProperty['owner']
 
 # Azure AD App Registration infos
 $appReqName = "app-$webappName"
