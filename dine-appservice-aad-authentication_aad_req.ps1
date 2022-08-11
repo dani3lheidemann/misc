@@ -1,10 +1,23 @@
+<#
+ .SYNOPSIS
+    Powershell Script to create an Azure AD App Registration and a corresponding Service Principal to attach it
+    at an Azure App Service App or Container as authentication object to ensure AAD Authentication at every access attempt (Zero Trust).
 
+ .DESCRIPTION
+    Docs
+      - https://codez.deedx.cz/posts/update-redirect-uris-from-azure-devops/
+      - https://docs.microsoft.com/en-us/azure/active-directory/roles/custom-consent-permissions (because Admin Consent is needed to approve tenant-wide application permissions)
+      - https://docs.microsoft.com/en-us/azure/active-directory/roles/custom-create (because you should create a custom AAD role instead of using Global Administrator)
 
-
+ .NOTES
+    Author:         Daniel Heidemann
+    Mail:           daniel.heidemann@the-architect.cloud
+    Company:        Heidemann Cloud Consulting Services
+    Created:        11 August 2022
+    SDK (tested):   PowerShell Core 7.2 // PowerShell Azure Module 8.0.0
+#>
 
 param([string] $webappName)
-
-Install-Module -Name "Microsoft.Graph.Applications" -Force
 
 $ErrorActionPreference = "Stop"
 
@@ -18,18 +31,11 @@ $ErrorActionPreference = "Stop"
 $token = Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com"
 Connect-MgGraph -AccessToken $token.Token
 
+# ---------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------- Global Parameters ------------------------------------------- #
+# ---------------------------------------------------------------------------------------------------------- #
 
-# $webappName = "wrhrtzzjhwefs-test1"
-$appReqName = "app-$webappName"
-$description = "This AAD Application belongs to Azure App Service $webappName in Subscription: Id:$($subscription.Id), Name:$($subscription.Name)."
-$subscription = (Get-AzContext).Subscription
-
-
-if (!$webappName) {
-  Throw "Webapp name not passed."
-}
-
-
+Install-Module -Name "Microsoft.Graph.Applications" -Force
 
 # Microsoft Graph App ID (DON'T CHANGE)
 $GraphAppId = "00000003-0000-0000-c000-000000000000"
@@ -37,10 +43,16 @@ $GraphAppId = "00000003-0000-0000-c000-000000000000"
 # Check the Microsoft Graph documentation for the permission you need for the operation
 $PermissionName = "User.Read.All"
 
+# Azure AD App Registration infos
+$appReqName = "app-$webappName"
+$notes = "This AAD Application belongs to Azure App Service $webappName in Subscription: Id:$($subscription.Id), Name:$($subscription.Name)."
+$subscription = (Get-AzContext).Subscription
 
 
 
-# ref to -> https://codez.deedx.cz/posts/update-redirect-uris-from-azure-devops/
+# ---------------------------------------------------------------------------------------------------------- #
+# ------------------------------------------------ Script -------------------------------------------------- #
+# ---------------------------------------------------------------------------------------------------------- #
 
 ### ------------------------------------------------
 # Setup and configure Azure AD App Registration
@@ -54,6 +66,7 @@ if ($app_reg) {
   $app_sp = Get-MgServicePrincipal -Filter "AppId eq '$($app_reg.AppId)'"
   Write-Host "Found AAD app registration $($app_reg.DisplayName). Skipping..." -ForegroundColor Yellow
   Write-Host "Found AAD service principal $($app_sp.AppDisplayName). Skipping..." -ForegroundColor Yellow
+
 }
 else {
 
@@ -67,26 +80,28 @@ else {
 
   $AppRole = $MsGraphServicePrincipal.AppRoles | Where-Object { $_.Value -eq $PermissionName -and $_.AllowedMemberTypes -contains "Application" }
 
-
-
-
-
   # ----------------------------------------------------
   # Create app registration
 
   $params = @{
     displayName            = $appReqName
-    description            = $description
+    notes                  = $notes
     signInAudience         = "AzureADMyOrg"
-    requiredResourceAccess = @(@{
+    requiredResourceAccess = @(
+      @{
         resourceAppId  = $GraphAppId
-        resourceAccess = @(@{
+        resourceAccess = @(
+          @{
             id   = $AppRole.Id
             type = "Role"
-          })
-      })
+          }
+        )
+      }
+    )
     web                    = @{
-      redirectUris          = @("https://$webappName.azurewebsites.net/.auth/login/aad/callback")
+      redirectUris          = @(
+        ("https://$webappName.azurewebsites.net/.auth/login/aad/callback")
+      )
       implicitGrantSettings = @{
         enableIdTokenIssuance     = $true
         enableAccessTokenIssuance = $false
@@ -98,12 +113,12 @@ else {
   $appRegistration = New-MgApplication -BodyParameter $params
 
 
+
+
   # ----------------------------------------------------
   # Create corresponding service principal
+
   $appServicePrincipal = New-MgServicePrincipal -AppId $appRegistration.AppId -AdditionalProperties @{}
-
-
-
 
 
 
@@ -115,8 +130,11 @@ else {
     Type = "Role"
   }
 
-  # AppId 00000003-0000-0000-c000-000000000000 is the Microsoft Graph application
+  # MS Graph App ID
+  
   $graphServicePrincipal = Get-MgServicePrincipal -Filter "appId eq '$GraphAppId'"
+
+  # Grant admin consent to app registration for permission "User.Read.All"
 
   New-MgServicePrincipalAppRoleAssignment `
     -ServicePrincipalId $appServicePrincipal.Id `
