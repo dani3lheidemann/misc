@@ -88,6 +88,7 @@ if (-not $lzengineerGroup) {
 # -------------------------------
 # Add ALZ Engineers to ALZ AAD group
 
+$groupMembers = @()
 $groupMembers = $p_alz_engineers_upn + $p_alz_managed_identity_objectId
 
 foreach ($engineer in $groupMembers) {
