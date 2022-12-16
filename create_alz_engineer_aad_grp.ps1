@@ -21,7 +21,7 @@
 Param (        
     [Parameter(Mandatory = $true)][string]$p_alz_name,
     [Parameter(Mandatory = $true)][array]$p_alz_engineers_upn,
-    [Parameter(Mandatory = $true)][array]$p_managed_identity_id
+    [Parameter(Mandatory = $true)][array]$p_alz_managed_identity_objectId
 )
 
 $ErrorActionPreference = "Stop"
@@ -81,7 +81,7 @@ if (-not $lzengineerGroup) {
 # -------------------------------
 # Add ALZ Engineers to ALZ AAD group
 
-$groupMembers = $p_alz_engineers_upn + $p_managed_identity_id
+$groupMembers = $p_alz_engineers_upn + $p_alz_managed_identity_objectId
 
 foreach ($engineer in $groupMembers) {
 
@@ -96,3 +96,12 @@ foreach ($engineer in $groupMembers) {
 
 
 Write-Output "Azure AD group Setup for Azure Landing Zone $p_alz_name finished."
+
+
+# ---------------------------------------------------------------------------------------------------------- #
+# ------------------------------------------------ Output -------------------------------------------------- #
+# ---------------------------------------------------------------------------------------------------------- #
+
+
+$DeploymentScriptOutputs = @{}
+$DeploymentScriptOutputs['lzengineerGroupId'] = $lzengineerGroup.id
