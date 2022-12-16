@@ -130,13 +130,13 @@ foreach ($member in $groupMemberObjectIds) {
 
     # Error Handling -> Continue on "error" that the UPN already exists in group.
 
-    if ($addMembersToGroup.error.message -ne "One or more added object references already exist for the following modified properties: 'members'." ) {
+    if ($addMembersToGroup.error) {
 
         Throw "An error occured -> code: $($addMembersToGroup.error.code); message: $($addMembersToGroup.error.message); innerError: $($addMembersToGroup.error.innerError)"
 
     }
     else {
-        Write-Output "Successfully added [$engineer] to Landing Zone Engineer group [Name: $($lzengineerGroup.displayName)]."
+        Write-Output "Successfully added [$member] to Landing Zone Engineer group [Name: $($lzengineerGroup.displayName)]."
     }
 }
 
