@@ -83,6 +83,9 @@ if (-not $lzengineerGroup) {
     Write-Output "Created Azure AD group [Name: $($lzengineerGroup.displayName)] to contribute on Azure Landing Zone $p_alz_name."
 
 }
+else {
+    Write-Output "Azure AD group $lzengineerGroupName already exists. Take this group and add LZ Engineers now."
+}
 
 
 # -------------------------------
