@@ -21,7 +21,7 @@
 Param (        
     [Parameter(Mandatory = $true)][string]$p_alz_name,
     [Parameter(Mandatory = $true)][array]$p_alz_engineers_upn,
-    [Parameter(Mandatory = $true)][array]$p_alz_managed_identity_objectId
+    [Parameter(Mandatory = $true)][string]$p_alz_managed_identity_objectId
 )
 
 $ErrorActionPreference = "Stop"
@@ -54,7 +54,6 @@ Connect-azaccount -Identity
 
 $lzengineerGroupName = "grp-az-$p_alz_name-lzengineer"
 $lzengineerGroup = ((Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups?`$filter=displayName+eq+'$lzengineerGroupName'" -Method GET).Content | ConvertFrom-Json).value
-
 
 # -------------------------------
 # Create new AAD ALZ group for specific Subscription in case there was no group found in AAD 
