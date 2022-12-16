@@ -20,7 +20,7 @@
 
 Param (        
     [Parameter(Mandatory = $true)][string]$p_alz_name,
-    [Parameter(Mandatory = $true)]$p_alz_engineers_upn,
+    [Parameter(Mandatory = $true)][string]$p_alz_engineers_upn,
     [Parameter(Mandatory = $true)][string]$p_alz_managed_identity_objectId
 )
 
@@ -48,6 +48,13 @@ Connect-azaccount -Identity
 # ---------------------------------------------------------------------------------------------------------- #
 # ------------------------------------------------ Script -------------------------------------------------- #
 # ---------------------------------------------------------------------------------------------------------- #
+
+# -------------------------------
+# Convert type of $p_alz_engineers_upn param (passing array as an input param was not 100% possible, so this is a workaround)
+
+$p_alz_engineers_upn = $p_alz_engineers_upn.Split(",")
+
+
 
 # -------------------------------
 # Check if group already exists
