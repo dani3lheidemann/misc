@@ -119,10 +119,10 @@ $groupMemberObjectIds += $p_alz_managed_identity_objectId
 # -------------------------------
 # Add ALZ Engineers to ALZ AAD group
 
-foreach ($engineer in $aadGroupMembers) {
+foreach ($member in $groupMemberObjectIds) {
 
     $payload = @{
-        '@odata.id' = "https://graph.microsoft.com/v1.0/directoryObjects/$engineer"
+        '@odata.id' = "https://graph.microsoft.com/v1.0/directoryObjects/$member"
     }
 
     $addMembersToGroup = (Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups/$($lzengineerGroup.id)/members/`$ref" -Method POST -Payload ($payload | ConvertTo-Json)).Content | ConvertFrom-Json
