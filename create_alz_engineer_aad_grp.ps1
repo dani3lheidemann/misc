@@ -57,7 +57,7 @@ Connect-azaccount -Identity
 # Convert type of $p_alz_engineers_upn param (passing array as an input param was not 100% possible, so this is a workaround)
 
 # $p_alz_engineers_upn = $p_alz_engineers_upn.Split(",")
-$aadGroupMembers = @($p_alz_engineers_upn, $p_alz_managed_identity_objectId)
+# $aadGroupMembers = @($p_alz_engineers_upn, $p_alz_managed_identity_objectId)
 
 
 
@@ -98,6 +98,21 @@ else {
 
 
 
+# -------------------------------
+# Get ALZ Engineers Object IDs based on UPN
+
+$groupMemberObjectIds = @()
+foreach ($engineer in $p_alz_engineers_upn) {
+
+    $groupMemberObjectIds += ((Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/users/$engineer" -Method GET).Content | ConvertFrom-Json).id
+}
+
+# -------------------------------
+# Add user-assigned Managed Identity to group
+
+$groupMemberObjectIds += $p_alz_managed_identity_objectId
+
+
 
 
 
@@ -107,10 +122,10 @@ else {
 foreach ($engineer in $aadGroupMembers) {
 
     $payload = @{
-        'members@odata.bind' = @("https://graph.microsoft.com/v1.0/users/$($engineer)")
+        '@odata.id' = "https://graph.microsoft.com/v1.0/directoryObjects/$engineer"
     }
 
-    $addMembersToGroup = (Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups/$($lzengineerGroup.id)" -Method PATCH -Payload ($payload | ConvertTo-Json)).Content | ConvertFrom-Json
+    $addMembersToGroup = (Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups/$($lzengineerGroup.id)/members/`$ref" -Method POST -Payload ($payload | ConvertTo-Json)).Content | ConvertFrom-Json
 
 
     # Error Handling -> Continue on "error" that the UPN already exists in group.
