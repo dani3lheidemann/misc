@@ -3,7 +3,7 @@
  .SYNOPSIS
     Powershell Script to check whether a specific Azure AD group exists for Azure Landing Zone Subscription. If not, the group will be created.
     All users metioned in $p_alz_engineers_upn will be added to the group.
-    This script is executed as a "deployment script" as part of a an Azure Policy. 
+    This script is executed as a "deployment script" as part of a an Azure Policy with a Managed Identity. 
 
  .NOTES
     Author:         Daniel Heidemann
@@ -20,7 +20,8 @@
 
 Param (        
     [Parameter(Mandatory = $true)][string]$p_alz_name,
-    [Parameter(Mandatory = $true)][array]$p_alz_engineers_upn
+    [Parameter(Mandatory = $true)][array]$p_alz_engineers_upn,
+    [Parameter(Mandatory = $true)][array]$p_managed_identity_id
 )
 
 $ErrorActionPreference = "Stop"
@@ -80,7 +81,9 @@ if (-not $lzengineerGroup) {
 # -------------------------------
 # Add ALZ Engineers to ALZ AAD group
 
-foreach ($engineer in $p_alz_engineers_upn) {
+$groupMembers = $p_alz_engineers_upn + $p_managed_identity_id
+
+foreach ($engineer in $groupMembers) {
 
     $payload = @{
         'members@odata.bind' = @("https://graph.microsoft.com/v1.0/users/$($engineer)")
