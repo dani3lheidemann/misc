@@ -112,8 +112,13 @@ foreach ($engineer in $aadGroupMembers) {
 
     $addMembersToGroup = (Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups/$($lzengineerGroup.id)" -Method PATCH -Payload ($payload | ConvertTo-Json)).Content | ConvertFrom-Json
 
-    if ($addMembersToGroup.error) {
+
+    # Error Handling -> Continue on "error" that the UPN already exists in group.
+
+    if ($addMembersToGroup.error.message -ne "One or more added object references already exist for the following modified properties: 'members'." ) {
+
         Throw "An error occured -> code: $($addMembersToGroup.error.code); message: $($addMembersToGroup.error.message); innerError: $($addMembersToGroup.error.innerError)"
+
     }
     else {
         Write-Output "Successfully added [$engineer] to Landing Zone Engineer group [Name: $($lzengineerGroup.displayName)]."
