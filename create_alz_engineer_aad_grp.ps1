@@ -56,7 +56,7 @@ Connect-azaccount -Identity
 # -------------------------------
 # Convert type of $p_alz_engineers_upn param (passing array as an input param was not 100% possible, so this is a workaround)
 
-$p_alz_engineers_upn = $p_alz_engineers_upn.Split(",")
+# $p_alz_engineers_upn = $p_alz_engineers_upn.Split(",")
 $aadGroupMembers = @($p_alz_engineers_upn, $p_alz_managed_identity_objectId)
 
 
@@ -94,6 +94,11 @@ if (-not $lzengineerGroup) {
 else {
     Write-Output "Azure AD group $lzengineerGroupName already exists. Take this group and add LZ Engineers now."
 }
+
+
+
+
+
 
 
 # -------------------------------
