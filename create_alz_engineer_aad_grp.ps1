@@ -20,7 +20,7 @@
 
 Param (        
     [Parameter(Mandatory = $true)][string]$p_alz_name,
-    [Parameter(Mandatory = $true)][array]$p_alz_engineers_upn,
+    [Parameter(Mandatory = $true)]$p_alz_engineers_upn,
     [Parameter(Mandatory = $true)][string]$p_alz_managed_identity_objectId
 )
 
