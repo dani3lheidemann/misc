@@ -26,6 +26,9 @@ Param (
 
 $ErrorActionPreference = "Stop"
 
+
+
+
 # ---------------------------------------------------------------------------------------------------------- #
 # ------------------------------------------------ LOGIN --------------------------------------------------- #
 # ---------------------------------------------------------------------------------------------------------- #
@@ -54,6 +57,7 @@ Connect-azaccount -Identity
 # Convert type of $p_alz_engineers_upn param (passing array as an input param was not 100% possible, so this is a workaround)
 
 $p_alz_engineers_upn = $p_alz_engineers_upn.Split(",")
+$aadGroupMembers = @($p_alz_engineers_upn, $p_alz_managed_identity_objectId)
 
 
 
@@ -79,9 +83,13 @@ if (-not $lzengineerGroup) {
     }
 
     $lzengineerGroup = ((Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups" -Method POST -Payload ($payload | ConvertTo-Json))).Content | ConvertFrom-Json
-
-    Write-Output "Created Azure AD group [Name: $($lzengineerGroup.displayName)] to contribute on Azure Landing Zone $p_alz_name."
-
+    
+    if ($lzengineerGroup.error) {
+        Throw "An error occured -> code: $($lzengineerGroup.error.code); message: $($lzengineerGroup.error.message); innerError: $($lzengineerGroup.error.innerError)"
+    }
+    else {
+        Write-Output "Created Azure AD group [Name: $($lzengineerGroup.displayName)] to contribute on Azure Landing Zone $p_alz_name."
+    }
 }
 else {
     Write-Output "Azure AD group $lzengineerGroupName already exists. Take this group and add LZ Engineers now."
@@ -91,17 +99,20 @@ else {
 # -------------------------------
 # Add ALZ Engineers to ALZ AAD group
 
-$groupMembers = @($p_alz_engineers_upn, $p_alz_managed_identity_objectId)
-
-foreach ($engineer in $groupMembers) {
+foreach ($engineer in $aadGroupMembers) {
 
     $payload = @{
         'members@odata.bind' = @("https://graph.microsoft.com/v1.0/users/$($engineer)")
     }
 
-    $addMembersToGroup = Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups/$($lzengineerGroup.id)" -Method PATCH -Payload ($payload | ConvertTo-Json)
+    $addMembersToGroup = (Invoke-AzRestMethod "https://graph.microsoft.com/v1.0/groups/$($lzengineerGroup.id)" -Method PATCH -Payload ($payload | ConvertTo-Json)).Content | ConvertFrom-Json
 
-    Write-Output "Successfully added [$engineer] to Landing Zone Engineer group [Name: $($lzengineerGroup.displayName)]."
+    if ($addMembersToGroup.error) {
+        Throw "An error occured -> code: $($addMembersToGroup.error.code); message: $($addMembersToGroup.error.message); innerError: $($addMembersToGroup.error.innerError)"
+    }
+    else {
+        Write-Output "Successfully added [$engineer] to Landing Zone Engineer group [Name: $($lzengineerGroup.displayName)]."
+    }
 }
 
 
